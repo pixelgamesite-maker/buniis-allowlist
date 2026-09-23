@@ -1,0 +1,5 @@
+node_modules/
+.env
+.env.*
+merkle-root.txt
+allowlist.csv
