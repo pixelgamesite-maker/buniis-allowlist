@@ -26,6 +26,7 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import { createClient } from "@supabase/supabase-js";
 import { isAddress, getAddress } from "viem";
+import WebSocket from "ws";
 import { parseAddressCsv, buildTree, storeProofs } from "./merkle.mjs";
 
 const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_API_KEY } = process.env;
@@ -46,6 +47,13 @@ if (ALLOWED_ORIGINS.includes("*")) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
+  // This service never uses Supabase Realtime (no live subscriptions —
+  // everything here is plain request/response REST calls), but the
+  // client's constructor initializes a RealtimeClient unconditionally,
+  // which crashes on startup if native WebSocket isn't available. Rather
+  // than depend on Railway building with a specific Node version,
+  // explicitly hand it the `ws` package so it never looks for a native one.
+  realtime: { transport: WebSocket },
 });
 const app = express();
 

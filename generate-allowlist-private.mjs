@@ -14,6 +14,7 @@
  */
 import { readFileSync, writeFileSync } from "fs";
 import { createClient } from "@supabase/supabase-js";
+import WebSocket from "ws";
 import { parseAddressCsv, buildTree, storeProofs } from "./merkle.mjs";
 
 const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
@@ -24,7 +25,10 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   process.exit(1);
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { persistSession: false },
+  realtime: { transport: WebSocket },
+});
 
 const { addresses, skipped, duplicates } = parseAddressCsv(readFileSync(csvPath, "utf8"));
 for (const line of skipped) console.warn(`Skipped: "${line}"`);
